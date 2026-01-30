@@ -75,6 +75,7 @@ export interface WebGLImageViewerRef {
   zoomOut: (animated?: boolean) => void
   resetView: () => void
   getScale: () => number
+  destroy: () => void
 }
 
 export interface DebugInfo {

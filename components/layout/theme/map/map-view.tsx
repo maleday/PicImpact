@@ -57,8 +57,8 @@ export function MapView({ images }: MapViewProps) {
       `}</style>
       <Map
         initialViewState={{
-          longitude: 0,
-          latitude: 20,
+          longitude: 121,
+          latitude: 31,
           zoom: 1.5
         }}
         style={{ width: '100%', height: '100%' }}

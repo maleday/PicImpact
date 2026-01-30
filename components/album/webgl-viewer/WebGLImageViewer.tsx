@@ -14,7 +14,7 @@
  */
 
 import * as React from 'react'
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, useEffectEvent } from 'react'
 
 import {
   defaultAlignmentAnimation,
@@ -61,9 +61,10 @@ export const WebGLImageViewer = ({
   Omit<React.HTMLAttributes<HTMLDivElement>, 'className'>) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const viewerRef = useRef<WebGLImageViewerEngine | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
   const [tileOutlineEnabled, setTileOutlineEnabled] = useState(false)
 
-  const setDebugInfo = useRef((() => {}) as (debugInfo: DebugInfo) => void)
+  const setDebugInfo = useRef((() => { }) as (debugInfo: DebugInfo) => void)
 
   const config: Required<WebGLImageViewerProps> = useMemo(
     () => ({
@@ -89,9 +90,9 @@ export const WebGLImageViewer = ({
         ...alignmentAnimation,
       },
       velocityAnimation: { ...defaultVelocityAnimation, ...velocityAnimation },
-      onZoomChange: onZoomChange || (() => {}),
-      onImageCopied: onImageCopied || (() => {}),
-      onLoadingStateChange: onLoadingStateChange || (() => {}),
+      onZoomChange: onZoomChange || (() => { }),
+      onImageCopied: onImageCopied || (() => { }),
+      onLoadingStateChange: onLoadingStateChange || (() => { }),
       debug: debug || false,
     }),
     [
@@ -123,32 +124,30 @@ export const WebGLImageViewer = ({
     zoomOut: (animated?: boolean) => viewerRef.current?.zoomOut(animated),
     resetView: () => viewerRef.current?.resetView(),
     getScale: () => viewerRef.current?.getScale() || 1,
+    destroy: () => viewerRef.current?.destroy(),
   }))
-
-  useEffect(() => {
+  const setUpWebGLEngine = useEffectEvent(() => {
+    if (isInitialized) return viewerRef.current
     if (!canvasRef.current) return
-
     const webGLImageViewerEngine = new WebGLImageViewerEngine(
       canvasRef.current,
       config,
       debug ? { current: setDebugInfo.current } : undefined,
     )
-
+    viewerRef.current = webGLImageViewerEngine
     try {
       const preknownWidth = config.width > 0 ? config.width : undefined
       const preknownHeight = config.height > 0 ? config.height : undefined
-      webGLImageViewerEngine.loadImage(src, preknownWidth, preknownHeight).catch(console.error)
-      viewerRef.current = webGLImageViewerEngine
-      setTileOutlineEnabled(webGLImageViewerEngine.isTileOutlineEnabled())
+      viewerRef.current.loadImage(src, preknownWidth, preknownHeight).catch(console.error)
     } catch (error) {
-      console.error('Failed to initialize WebGL Image Viewer:', error)
+      console.error('Failed to load image in WebGL Image Viewer:', error)
     }
-
-    return () => {
-      webGLImageViewerEngine?.destroy()
-      viewerRef.current = null
-    }
-  }, [src, config, debug])
+    setIsInitialized(true)
+    return viewerRef.current
+  })
+  useEffect(() => {
+    setUpWebGLEngine()
+  }, [])
 
   const handleOutlineToggle = useCallback(
     (enabled: boolean) => {

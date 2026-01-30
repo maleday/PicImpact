@@ -7,12 +7,12 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { useButtonStore } from '~/app/providers/button-store-providers'
 import { CompassIcon } from '~/components/icons/compass'
-import { MapIcon } from 'lucide-react'
 import Command from '~/components/layout/command'
 import type { AlbumDataProps } from '~/types/props'
 import { Label, ListBox, Modal } from '@heroui/react'
 import { GalleryThumbnailsIcon } from '~/components/icons/gallery-thumbnails'
 import type { AlbumType } from '~/types'
+import { MapPinIcon } from '~/components/icons/map-pin'
 
 export default function DockMenu(props: Readonly<AlbumDataProps>) {
   const router = useRouter()
@@ -53,10 +53,9 @@ export default function DockMenu(props: Readonly<AlbumDataProps>) {
             />
           </DockIcon>
           <DockIcon>
-            <MapIcon
+            <MapPinIcon
               onClick={() => router.push('/map')}
               size={18}
-              className="text-black dark:text-white"
               aria-label={t('Link.map')}
             />
           </DockIcon>

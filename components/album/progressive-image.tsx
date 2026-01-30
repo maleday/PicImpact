@@ -1,7 +1,7 @@
 'use client'
 
 import type { ProgressiveImageProps } from '~/types/props.ts'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Activity } from 'react'
 import { useTranslations } from 'next-intl'
 import { MotionImage } from '~/components/album/motion-image'
 import { useBlurImageDataUrl } from '~/hooks/use-blurhash'
@@ -20,25 +20,25 @@ export default function ProgressiveImage(
   props: Readonly<ProgressiveImageProps>,
 ) {
   const t = useTranslations()
-  
+
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [highResImageUrl, setHighResImageUrl] = useState<string | null>(null)
-  const [showWebGLViewer, setShowWebGLViewer] = useState(Boolean(props.showLightbox))
-  const [webGLAvailable, setWebGLAvailable] = useState(true)
-  
-  const webglViewerRef = useRef<WebGLImageViewerRef | null>(null)
+  const [highResImageLoaded, setHighResImageLoaded] = useState(false)
+  const [showFullScreenViewer, setShowFullScreenViewer] = useState(Boolean(props.showLightbox))
+  const [webGLAvailable] = useState(() => isWebGLSupported())
 
+  const webglViewerRef = useRef<WebGLImageViewerRef | null>(null)
   useEffect(() => {
-    setShowWebGLViewer(Boolean(props.showLightbox))
+    return () => {
+      webglViewerRef.current?.destroy()
+    }
+  }, [])
+  useEffect(() => {
+    setShowFullScreenViewer(Boolean(props.showLightbox))
   }, [props.showLightbox])
 
-  // 检测 WebGL 支持
-  useEffect(() => {
-    setWebGLAvailable(isWebGLSupported())
-  }, [])
-  
   useEffect(() => {
     loadHighResolutionImage()
     return () => {
@@ -86,7 +86,7 @@ export default function ProgressiveImage(
   const dataURL = useBlurImageDataUrl(props.blurhash)
 
   const handleCloseViewer = () => {
-    setShowWebGLViewer(false)
+    setShowFullScreenViewer(false)
     if (props.onShowLightboxChange) {
       props.onShowLightboxChange(false)
     }
@@ -95,7 +95,7 @@ export default function ProgressiveImage(
   return (
     <div className="relative">
       {/* 预览图 - 在高清图未加载完成时显示 */}
-      {!highResImageUrl ? (
+      <Activity mode={highResImageLoaded ? 'hidden' : 'visible'}>
         <MotionImage
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -110,11 +110,30 @@ export default function ProgressiveImage(
           height={props.height}
           alt={props.alt || 'image'}
         />
-      ) : (
-        /* 高清图已加载 - 根据状态选择渲染方式 */
+        {/* 加载进度条 */}
+        {isLoading && (
+          <div className="absolute bottom-0 left-0 w-full">
+            <div
+              className="h-1 bg-blue-500"
+              style={{ width: `${loadingProgress}%` }}
+            ></div>
+            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              {loadingProgress}%
+            </div>
+          </div>
+        )}
+        {/* 错误提示 */}
+        {error && (
+          <div className="absolute bottom-0 left-0 w-full">
+            <div className="absolute bottom-2 right-2 text-white bg-black/60 text-xs px-2 py-1 rounded">
+              {error}
+            </div>
+          </div>
+        )}
+      </Activity>
+      {highResImageUrl ? (
         <>
-          {/* 普通预览模式 - 点击可打开全屏查看 */}
-          {!showWebGLViewer && (
+          <Activity mode={highResImageLoaded && !showFullScreenViewer ? 'visible' : 'hidden'}>
             <img
               className="object-contain md:max-h-[90vh] cursor-pointer"
               src={highResImageUrl}
@@ -122,17 +141,18 @@ export default function ProgressiveImage(
               height={props.height}
               alt={props.alt || 'image'}
               onClick={() => {
-                setShowWebGLViewer(true)
+                setShowFullScreenViewer(true)
                 if (props.onShowLightboxChange) {
                   props.onShowLightboxChange(true)
                 }
               }}
+              onLoad={() => {
+                setHighResImageLoaded(true)
+              }}
             />
-          )}
-          
-          {/* WebGL 全屏查看模式 */}
-          {showWebGLViewer && webGLAvailable && (
-            <div 
+          </Activity>
+          <Activity mode={showFullScreenViewer ? 'visible' : 'hidden'}>
+            {webGLAvailable ? <div
               className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
               onClick={(e) => {
                 // 点击背景关闭
@@ -163,12 +183,12 @@ export default function ProgressiveImage(
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
-              
+
               {/* 操作提示 */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm pointer-events-none">
                 {t('Tips.zoomHint')}
               </div>
-              
+
               {/* WebGL 图片查看器 */}
               <div className="w-full h-full">
                 <WebGLImageViewer
@@ -181,17 +201,11 @@ export default function ProgressiveImage(
                   minScale={0.5}
                   maxScale={10}
                   limitToBounds={true}
-                  centerOnInit={true}
                   smooth={true}
                   debug={process.env.NODE_ENV === 'development'}
                 />
               </div>
-            </div>
-          )}
-          
-          {/* WebGL 不可用时的 Fallback - 使用普通全屏图片 */}
-          {showWebGLViewer && !webGLAvailable && (
-            <div 
+            </div> : <div
               className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center overflow-auto"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
@@ -220,43 +234,20 @@ export default function ProgressiveImage(
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
-              
               {/* WebGL 不可用提示 */}
               <div className="absolute top-4 left-4 text-white/70 text-sm bg-black/50 px-3 py-1 rounded">
                 {t('Tips.webglUnavailable')}
               </div>
-              
               <img
                 className="max-w-full max-h-full object-contain"
                 src={highResImageUrl}
                 alt={props.alt || 'image'}
               />
-            </div>
-          )}
+            </div>}
+          </Activity>
         </>
-      )}
+      ) : null}
 
-      {/* 加载进度条 */}
-      {isLoading && (
-        <div className="absolute bottom-0 left-0 w-full">
-          <div
-            className="h-1 bg-blue-500"
-            style={{ width: `${loadingProgress}%` }}
-          ></div>
-          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-            {loadingProgress}%
-          </div>
-        </div>
-      )}
-
-      {/* 错误提示 */}
-      {error && (
-        <div className="absolute bottom-0 left-0 w-full">
-          <div className="absolute bottom-2 right-2 text-white bg-black/60 text-xs px-2 py-1 rounded">
-            {error}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
