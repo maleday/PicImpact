@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSessionCookie } from 'better-auth/cookies'
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const pathname = request.nextUrl.pathname
 
-  // 1) Basic Auth：只拦页面访问，不拦 API / 静态资源
+  // ===== custom basic auth start =====
   const expectedAuth = process.env.ADMIN_AUTH
   const auth = request.headers.get('authorization')
 
@@ -21,14 +21,14 @@ export async function proxy(request: NextRequest) {
       },
     })
   }
+  // ===== custom basic auth end =====
 
-  // 2) 原有 PicImpact 登录态逻辑
   const sessionCookie = getSessionCookie(request, {
-    cookiePrefix: 'pic-impact',
+    cookiePrefix: 'pic-impact'
   })
 
   if (pathname.startsWith('/api/v1') && !sessionCookie) {
-    return NextResponse.json(
+    return Response.json(
       { success: false, message: 'authentication failed' },
       { status: 401 }
     )
