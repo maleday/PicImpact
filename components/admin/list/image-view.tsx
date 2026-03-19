@@ -69,7 +69,7 @@ export default function ImageView() {
           <ExifView {...props} />
           <label
             htmlFor="detail"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 详情 </span>
 
@@ -77,13 +77,13 @@ export default function ImageView() {
               type="text"
               id="detail"
               disabled
-              value={imageViewData?.detail}
+              value={imageViewData?.detail ?? ''}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="width"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 宽度 px </span>
 
@@ -91,13 +91,13 @@ export default function ImageView() {
               type="text"
               id="width"
               disabled
-              value={String(imageViewData?.width)}
+              value={imageViewData?.width ?? ''}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="height"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 高度 px </span>
 
@@ -105,13 +105,13 @@ export default function ImageView() {
               type="text"
               id="height"
               disabled
-              value={String(imageViewData?.height)}
+              value={imageViewData?.height ?? ''}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="lon"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 经度 </span>
 
@@ -119,13 +119,13 @@ export default function ImageView() {
               type="text"
               id="lon"
               disabled
-              value={String(imageViewData?.lon)}
+              value={imageViewData?.lon ?? ''}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="lat"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 纬度 </span>
 
@@ -133,13 +133,13 @@ export default function ImageView() {
               type="text"
               id="lat"
               disabled
-              value={String(imageViewData?.lat)}
+              value={imageViewData?.lat ?? ''}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="sort"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 排序 </span>
 
@@ -147,7 +147,7 @@ export default function ImageView() {
               type="text"
               id="sort"
               disabled
-              value={String(imageViewData?.sort)}
+              value={imageViewData?.sort ?? ''}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>

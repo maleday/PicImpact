@@ -4,7 +4,9 @@ dist
 .output
 .idea/
 .vercel/
-*/skills
+**/skills/**
+skills-lock.json
+tsconfig.tsbuildinfo
 .claude/
 # next.js
 /.next/

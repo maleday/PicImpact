@@ -73,7 +73,7 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
         <div className="mt-2 space-y-2">
           <label
             htmlFor="title"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 图片标题 </span>
 
@@ -81,14 +81,14 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="title"
               placeholder="请输入图片标题"
-              value={image?.title}
+              value={image?.title ?? ''}
               onChange={(e) => setImageEditData({...image, title: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="url"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 链接 </span>
 
@@ -96,14 +96,14 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="url"
               placeholder="输入链接"
-              value={image?.url}
+              value={image?.url ?? ''}
               onChange={(e) => setImageEditData({...image, url: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="preview_url"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 预览链接 </span>
 
@@ -111,14 +111,14 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="preview_url"
               placeholder="输入预览链接"
-              value={image?.preview_url}
+              value={image?.preview_url ?? ''}
               onChange={(e) => setImageEditData({...image, preview_url: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="video_url"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 视频链接 </span>
 
@@ -126,14 +126,14 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="video_url"
               placeholder="输入视频链接"
-              value={image?.video_url}
+              value={image?.video_url ?? ''}
               onChange={(e) => setImageEditData({...image, video_url: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="detail"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 详情 </span>
 
@@ -141,42 +141,42 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="detail"
               placeholder="输入详情"
-              value={image?.detail}
+              value={image?.detail ?? ''}
               onChange={(e) => setImageEditData({...image, detail: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="width"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 宽度 px </span>
 
             <input
               type="number"
               id="width"
-              value={image?.width}
+              value={image?.width ?? ''}
               onChange={(e) => setImageEditData({...image, width: Number(e.target.value)})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="height"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 高度 px </span>
 
             <input
               type="number"
               id="height"
-              value={image?.height}
+              value={image?.height ?? ''}
               onChange={(e) => setImageEditData({...image, height: Number(e.target.value)})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="lon"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 经度 </span>
 
@@ -184,14 +184,14 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="lon"
               placeholder="输入经度"
-              value={image?.lon}
+              value={image?.lon ?? ''}
               onChange={(e) => setImageEditData({...image, lon: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="lat"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 纬度 </span>
 
@@ -199,21 +199,21 @@ export default function ImageEditSheet(props : Readonly<ImageServerHandleProps &
               type="text"
               id="lat"
               placeholder="输入纬度"
-              value={image?.lat}
+              value={image?.lat ?? ''}
               onChange={(e) => setImageEditData({...image, lat: e.target.value})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />
           </label>
           <label
             htmlFor="sort"
-            className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+            className="block overflow-hidden rounded-md border border-input px-3 py-2 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
           >
             <span className="text-xs font-medium text-gray-700"> 排序 </span>
 
             <input
               type="number"
               id="sort"
-              value={image?.sort}
+              value={image?.sort ?? ''}
               onChange={(e) => setImageEditData({...image, sort: Number(e.target.value)})}
               className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
             />

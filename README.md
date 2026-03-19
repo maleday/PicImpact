@@ -41,7 +41,7 @@ PicImpact 是一个支持自部署的摄影作品展示网站，基于 Next.js +
 | DATABASE_URL | `postgres://postgres.[your-supabase-project]:[password]@aws-0-[aws-region].pooler.supabase.com:6543/postgres?pgbouncer=true`，`?pgbouncer=true` 用于使用 supabase 的连接池。 |
 | DIRECT_URL | `postgres://postgres.[your-supabase-project]:[password]@aws-0-[aws-region].pooler.supabase.com:5432/postgres`，用于 `prisma migrate`，如果使用非 serverless 数据库，与 `DATABASE_URL` 保持一致即可。                            |
 | BETTER_AUTH_SECRET  | 权限机密，你可以执行 npx auth secret 生成一个，反正是随机的字符串就行                                                                                                                        |
-| BETTER_AUTH_URL  | 如果您使用 nginx 进行反向代理，需要填写访问地址，如：`https://example.com `                                                                                                               |
+| BETTER_AUTH_URL  | 访问地址，如：`https://example.com `                                                                                                               |
 | BETTER_AUTH_PASSKEY_RP_ID  | Passkey 依赖方标识符，通常填写您的域名，如：`example.com`。本地开发可填写 `localhost`                                                                                                     |
 | BETTER_AUTH_PASSKEY_RP_NAME  | Passkey 依赖方名称，显示给用户的应用名称，如：`PicImpact` 或您的应用名称                                                                                                                  |
 
