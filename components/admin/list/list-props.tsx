@@ -70,12 +70,12 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
   const { setImageEdit, setImageEditData, setImageView, setImageViewData, setImageBatchDelete } = useButtonStore(
     (state) => state,
   )
-  const { data: albums, isLoading: albumsLoading } = useSWR('/api/v1/albums/get', fetcher)
-  const { data: adminConfig } = useSWR('/api/v1/settings/get-admin-config', fetcher)
+  const { data: albums, isLoading: albumsLoading } = useSWR('/api/v1/albums', fetcher)
+  const { data: adminConfig } = useSWR('/api/v1/settings/admin-config', fetcher)
   const t = useTranslations()
 
   const dataProps: ImageListDataProps = {
-    data: data,
+    data: data ?? [],
   }
 
   useEffect(() => {
@@ -120,27 +120,27 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
         }),
       })
       if (res.status === 200) {
-        toast.success('更新成功！')
+        toast.success(t('Tips.updateSuccess'))
         await mutate()
       } else {
-        toast.error('更新失败！')
+        toast.error(t('Tips.updateFailed'))
       }
     } catch {
-      toast.error('更新失败！')
+      toast.error(t('Tips.updateFailed'))
     } finally {
       setUpdateShowId('')
       setUpdateShowLoading(false)
     }
-  }, [mutate])
+  }, [mutate, t])
 
   async function updateImageAlbum() {
     if (!imageAlbum) {
-      toast.error('图片绑定的相册不能为空！')
+      toast.error(t('List.albumBindingRequired'))
       return
     }
     try {
       setUpdateImageAlbumLoading(true)
-      const res = await fetch('/api/v1/images/update-Album', {
+      const res = await fetch('/api/v1/images/update-album', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -151,15 +151,15 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
         }),
       })
       if (res.status === 200) {
-        toast.success('更新成功！')
+        toast.success(t('Tips.updateSuccess'))
         setImageAlbum('')
         setImage({} as ImageType)
         await mutate()
       } else {
-        toast.error('更新失败！')
+        toast.error(t('Tips.updateFailed'))
       }
     } catch {
-      toast.error('更新失败！')
+      toast.error(t('Tips.updateFailed'))
     } finally {
       setUpdateImageAlbumLoading(false)
     }
@@ -480,7 +480,7 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
           </Card>
         ))}
       </div>
-      {total !== 0 &&
+      {(total ?? 0) !== 0 &&
         <div className="flex space-x-2">
           <Select
             value={pageNum.toString()}
@@ -493,7 +493,7 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
               <SelectValue placeholder={pageNum} />
             </SelectTrigger>
             <SelectContent side="top">
-              {Array.from({ length: Math.ceil(total / pageSize) }, (_, i) => i + 1).map((num) => (
+              {Array.from({ length: Math.ceil((total ?? 0) / pageSize) }, (_, i) => i + 1).map((num) => (
                 <SelectItem key={num} value={num.toString()}>
                   {num}
                 </SelectItem>
@@ -511,7 +511,7 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
           />
           <ChevronRightIcon
             onClick={async () => {
-              if (pageNum < Math.ceil(total / pageSize)) {
+              if (pageNum < Math.ceil((total ?? 0) / pageSize)) {
                 setPageNum(pageNum + 1)
                 await mutate()
               }
