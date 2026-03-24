@@ -1,34 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionCookie } from 'better-auth/cookies'
 
-export async function proxy(request: NextRequest) {
-  const pathname = request.nextUrl.pathname
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
 
-  // ===== custom basic auth start =====
+  // 只对“真正的 HTML 文档请求”做 Basic Auth
+  const isHtmlDocument =
+    request.method === 'GET' &&
+    request.headers.get('accept')?.includes('text/html')
+
+  const isPrefetch =
+    request.headers.has('next-router-prefetch') ||
+    request.headers.get('purpose') === 'prefetch'
+
   const expectedAuth = process.env.ADMIN_AUTH
   const auth = request.headers.get('authorization')
 
-  const isPage =
-    !pathname.startsWith('/api') &&
-    !pathname.startsWith('/_next') &&
-    pathname !== '/favicon.ico'
-
-  if (isPage && expectedAuth && auth !== `Basic ${expectedAuth}`) {
-    return new NextResponse('Authentication Required', {
-      status: 401,
-      headers: {
-        'WWW-Authenticate': 'Basic realm="Secure Area"',
-      },
-    })
+  if (expectedAuth && isHtmlDocument && !isPrefetch) {
+    if (auth !== `Basic ${expectedAuth}`) {
+      return new NextResponse('Authentication Required', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Secure Area"',
+        },
+      })
+    }
   }
-  // ===== custom basic auth end =====
 
   const sessionCookie = getSessionCookie(request, {
-    cookiePrefix: 'pic-impact'
+    cookiePrefix: 'pic-impact',
   })
 
   if (pathname.startsWith('/api/v1') && !sessionCookie) {
-    return Response.json(
+    return NextResponse.json(
       { success: false, message: 'authentication failed' },
       { status: 401 }
     )
@@ -47,7 +51,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    {
+      source: '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+      missing: [
+        { type: 'header', key: 'next-router-prefetch' },
+        { type: 'header', key: 'purpose', value: 'prefetch' },
+      ],
+    },
     '/admin/:path*',
     '/api/v1/:path*',
   ],
