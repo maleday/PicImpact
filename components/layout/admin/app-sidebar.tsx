@@ -30,6 +30,9 @@ import { FingerprintIcon } from '~/components/icons/fingerprint'
 import { LoaderPinwheelIcon } from '~/components/icons/loader-pinwheel'
 import { KeySquareIcon } from '~/components/icons/key-square'
 import { CalendarDaysIcon } from '~/components/icons/calendar-days'
+import { ListTodoIcon } from '~/components/icons/list-todo'
+import { DownloadIcon } from '~/components/icons/download'
+import { AnimatedIconTrigger, mergeAnimatedTriggerProps } from '~/components/icons/animated-trigger'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter()
@@ -56,6 +59,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: t('Link.album'),
         url: '/admin/album',
         icon: GalleryThumbnailsIcon,
+      },
+      {
+        title: t('Link.tasks'),
+        url: '/admin/tasks',
+        icon: ListTodoIcon,
       },
       {
         title: t('Link.about'),
@@ -96,6 +104,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/admin/settings/daily',
           icon: CalendarDaysIcon,
         },
+        {
+          name: t('Link.backup'),
+          url: '/admin/settings/backup',
+          icon: DownloadIcon,
+        },
       ],
     },
   }
@@ -110,12 +123,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
         <SidebarGroup className="mt-auto">
           <SidebarMenu>
-            <SidebarMenuItem className="select-none">
-              <SidebarMenuButton className="cursor-pointer" onClick={() => router.push('/')}>
-                <LoaderPinwheelIcon size={18} />
-                <span>{t('Login.goHome')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <AnimatedIconTrigger>
+              {({ iconRef, triggerProps }) => (
+                <SidebarMenuItem className="select-none">
+                  <SidebarMenuButton
+                    {...mergeAnimatedTriggerProps({
+                      className: 'cursor-pointer',
+                      onClick: () => router.push('/'),
+                    }, triggerProps)}
+                  >
+                    <LoaderPinwheelIcon ref={iconRef} size={18} />
+                    <span>{t('Login.goHome')}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+            </AnimatedIconTrigger>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
