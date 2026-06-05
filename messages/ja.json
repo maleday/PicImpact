@@ -378,6 +378,11 @@
     "inputAvatar": "アバターをアップロードしてください"
   },
   "Config": {
+    "variantStorageTitle": "バリアントストレージ",
+    "variantStorageDesc": "サムネイル / バリアント前処理パイプラインのアップロード先ストレージ。Open List は非対応です。",
+    "variantStorageOff": "無効",
+    "variantStorageHelper": "選択したバックエンドを下のタブで事前に設定してください。",
+    "variantStorageNotEnabled": "バリアントパイプラインは無効です — ギャラリーはプレビュー / blurhash にフォールバックします。",
     "accesskey_id": "Aliyun OSS / AWS S3 AccessKey_ID",
     "accesskey_secret": "Aliyun OSS / AWS S3 AccessKey_Secret",
     "region": "Aliyun OSS / AWS S3 Region、例：oss-cn-hongkong",
@@ -557,7 +562,14 @@
     "detailDescription": "この実行の対象範囲、進行状況、結果、タイムライン、最近のログを確認します。",
     "detailEyebrow": "実行詳細",
     "unfinished": "継続中",
-    "countsTitle": "結果"
+    "countsTitle": "結果",
+    "tabMetadata": "メタデータ",
+    "tabPreprocess": "バリアント前処理",
+    "preprocessForceLabel": "すべて再生成",
+    "preprocessForceHint": "バリアントが未生成の画像だけでなく、すべての画像を再処理します。",
+    "preprocessScopeForce": "すべての画像（強制）",
+    "preprocessScopeMissing": "バリアント未生成の画像",
+    "preprocessStorageMissing": "先にストレージ設定でバリアントストレージのバックエンドを選択してください。"
   },
   "Backup": {
     "pageDescription": "Export and import versioned PicImpact backups. The package includes site configuration and business data, but excludes auth tables and object storage files.",

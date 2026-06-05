@@ -1,6 +1,6 @@
 // 业务专用类型
 
-import { AlbumType, Config, ImageType } from '~/types/index'
+import { AlbumType, GalleryDisplayConfig, ImageType } from '~/types/index'
 
 export type AlbumDataProps = {
   data: AlbumType[]
@@ -23,14 +23,21 @@ export type ImageHandleProps = {
   args: string
   album: string
   totalHandle: (album: string, camera?: string, lens?: string) => Promise<number>
-  configHandle?: () => Promise<Config[]>
+  configHandle?: () => Promise<GalleryDisplayConfig>
+  // Variant CDN base resolved on the server (the same value `configHandle` will
+  // return). Passed so the gallery has it on the very first client render,
+  // before the client-side config SWR resolves — otherwise the grid briefly
+  // sees an empty base, falls back to requesting `preview_url` thumbnails, then
+  // swaps to AVIF once config arrives (a wasteful double-load that spiked mobile
+  // memory). With this, the first render already serves AVIF variants.
+  variantBaseUrl?: string
 }
 
 export type PreviewImageHandleProps = {
   data: ImageType
   args: string
   id: string
-  configHandle?: () => Promise<Config[]>
+  configHandle?: () => Promise<GalleryDisplayConfig>
 }
 
 export type ProgressiveImageProps = {
@@ -42,6 +49,12 @@ export type ProgressiveImageProps = {
   alt?: string,
   showLightbox?:boolean
   onShowLightboxChange?: (value: boolean) => void
+  // Variant fields so the high-res viewer can load the largest generated variant
+  // (e.g. 2560 avif/webp) instead of the multi-MB original. Empty/missing → falls
+  // back to imageUrl (the original).
+  imageKey?: string
+  readyMaxWidth?: number
+  variantBaseUrl?: string
 }
 
 export type LinkProps = {

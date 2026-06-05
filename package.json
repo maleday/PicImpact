@@ -21,6 +21,7 @@
     "prisma:dev": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:seed": "npx prisma db seed",
+    "preprocess:backfill": "tsx --conditions=react-server scripts/preprocess-backfill.ts",
     "prebuild": "npx prisma generate"
   },
   "prisma": {
@@ -63,6 +64,7 @@
     "@radix-ui/react-toggle": "1.1.10",
     "@radix-ui/react-toggle-group": "1.1.11",
     "@radix-ui/react-tooltip": "1.2.8",
+    "@xmldom/xmldom": "0.9.9",
     "better-auth": "1.6.5",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -72,7 +74,6 @@
     "embla-carousel-react": "8.6.0",
     "emblor": "1.4.8",
     "exifreader": "4.38.1",
-    "@xmldom/xmldom": "0.9.9",
     "heic-to": "1.4.2",
     "heic2any": "0.0.4",
     "hono": "4.12.14",
@@ -80,6 +81,7 @@
     "livephotoskit": "1.5.6",
     "lucide-react": "1.8.0",
     "maplibre-gl": "5.23.0",
+    "masonic": "^4.1.0",
     "motion": "12.38.0",
     "next": "16.2.4",
     "next-intl": "4.9.1",
@@ -113,7 +115,7 @@
     "@next/bundle-analyzer": "16.2.4",
     "@next/eslint-plugin-next": "16.2.4",
     "@tailwindcss/postcss": "4.2.2",
-    "@types/node": "22.19.17",
+    "@types/node": "24.12.4",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/rss": "0.0.32",
@@ -131,6 +133,11 @@
     "overrides": {
       "@types/react": "19.2.14",
       "@types/react-dom": "19.2.3"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma"
+    ]
   }
 }

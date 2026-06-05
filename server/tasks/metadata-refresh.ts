@@ -8,6 +8,7 @@ import { DOMParser } from '@xmldom/xmldom'
 
 dayjs.extend(customParseFormat)
 
+import { getOrientedDimensions } from '~/server/lib/image-variants'
 import type { ExifType } from '~/types'
 import type { AdminTaskIssue, AdminTaskStage } from '~/types/admin-tasks'
 import { ADMIN_TASK_KEY_REFRESH_IMAGE_METADATA } from '~/types/admin-tasks'
@@ -26,7 +27,7 @@ const EMPTY_EXIF: ExifType = {
   make: '',
   model: '',
   bits: '',
-  data_time: '',
+  dateTime: '',
   exposure_time: '',
   f_number: '',
   exposure_program: '',
@@ -151,7 +152,7 @@ function normalizeExif(input: Partial<ExifType> | null | undefined): ExifType | 
     make: cleanString(input?.make),
     model: cleanString(input?.model),
     bits: cleanString(input?.bits),
-    data_time: cleanString(input?.data_time),
+    dateTime: cleanString(input?.dateTime),
     exposure_time: cleanString(input?.exposure_time),
     f_number: cleanString(input?.f_number),
     exposure_program: cleanString(input?.exposure_program),
@@ -165,8 +166,8 @@ function normalizeExif(input: Partial<ExifType> | null | undefined): ExifType | 
     white_balance: cleanString(input?.white_balance),
   }
 
-  if (exif.data_time && !dayjs(exif.data_time, 'YYYY:MM:DD HH:mm:ss', true).isValid()) {
-    exif.data_time = ''
+  if (exif.dateTime && !dayjs(exif.dateTime, 'YYYY:MM:DD HH:mm:ss', true).isValid()) {
+    exif.dateTime = ''
   }
 
   return Object.values(exif).some(Boolean) ? exif : null
@@ -329,7 +330,7 @@ function buildNormalizedExifFromTags(tags: ExifTags | null) {
     make: tags.Make?.description,
     model: tags.Model?.description,
     bits: tags['Bits Per Sample']?.description,
-    data_time: tags.DateTimeOriginal?.description || tags.DateTime?.description,
+    dateTime: tags.DateTimeOriginal?.description || tags.DateTime?.description,
     exposure_time: tags.ExposureTime?.description,
     f_number: tags.FNumber?.description,
     exposure_program: tags.ExposureProgram?.description,
@@ -448,11 +449,16 @@ export async function refreshImageMetadata(image: MetadataRefreshImage, signal?:
     const metadata = await sharp(buffer).metadata()
     throwIfMetadataTaskCancelled(signal)
 
-    if (metadata.width && metadata.width > 0) {
-      widthCandidate = metadata.width
+    // Use the EXIF-oriented dimensions so rotated images (orientation 5-8) get
+    // their displayed width/height persisted, matching what the browser stored
+    // on upload and what the variant pipeline generates. Reading the raw
+    // metadata here would write swapped dimensions for portrait phone photos.
+    const oriented = getOrientedDimensions(metadata)
+    if (oriented.width > 0) {
+      widthCandidate = oriented.width
     }
-    if (metadata.height && metadata.height > 0) {
-      heightCandidate = metadata.height
+    if (oriented.height > 0) {
+      heightCandidate = oriented.height
     }
   } catch (error) {
     if (signal?.aborted || isMetadataTaskCancelledError(error)) {

@@ -5,11 +5,14 @@ import type { ImageHandleProps } from '~/types/props.ts'
 import useSWRInfinite from 'swr/infinite'
 import { useSwrHydrated } from '~/hooks/use-swr-hydrated.ts'
 import { DraggableCardBody, DraggableCardContainer } from '~/components/ui/origin/draggable-card.tsx'
-import type { Config, ImageType } from '~/types'
+import type { GalleryDisplayConfig, ImageType } from '~/types'
 import Image from 'next/image'
 import { Skeleton } from '~/components/ui/skeleton'
 import { useBlurImageDataUrl } from '~/hooks/use-blurhash'
 import { cn } from '~/lib/utils'
+import { hasReadyVariants, makeVariantLoader } from '~/lib/image/loader'
+import { useAvifSupport } from '~/hooks/use-avif-support'
+import { POLAROID_GRID_SIZES } from '~/lib/image/grid-image-sizes'
 
 /**
  * 拍立得照片卡片组件
@@ -20,15 +23,39 @@ const PolaroidCard = memo(function PolaroidCard({
   style,
   onMouseDown,
   zIndex,
+  variantBaseUrl = '',
+  priority = false,
 }: {
   item: ImageType
   style: React.CSSProperties
   onMouseDown: (id: string) => void
   zIndex: number
+  variantBaseUrl?: string
+  priority?: boolean
 }) {
   const [isLoading, setIsLoading] = useState(true)
-  const [imgSrc, setImgSrc] = useState(item.preview_url)
   const blurDataUrl = useBlurImageDataUrl(item.blurhash)
+  const avifOk = useAvifSupport()
+  const [variantFailed, setVariantFailed] = useState(false)
+
+  // Image source ladder (same policy as the other themes): responsive variant
+  // via the CDN loader → preview thumbnail → blurhash. NEVER the full original
+  // (removes the prior onError → item.url 20MB fallback).
+  const variantReady = !variantFailed && hasReadyVariants(item.image_key, item.ready_max_width, variantBaseUrl)
+  const previewSrc = item.preview_url || ''
+  const imageProps = variantReady
+    ? {
+        src: item.image_key,
+        loader: makeVariantLoader({
+          base: variantBaseUrl,
+          imageKey: item.image_key,
+          readyMaxWidth: item.ready_max_width,
+          format: (avifOk ? 'avif' : 'webp') as 'avif' | 'webp',
+        }),
+      }
+    : previewSrc
+      ? { src: previewSrc, unoptimized: true }
+      : null
 
   // 如果缺少宽高数据，则跳过渲染以规避报错
   if (!item.width || !item.height || item.width <= 0 || item.height <= 0) {
@@ -82,29 +109,41 @@ const PolaroidCard = memo(function PolaroidCard({
       <div 
         className="relative overflow-hidden bg-muted shrink-0 w-full h-full shadow-inner"
       >
-        {isLoading && (
+        {imageProps && isLoading && (
           <Skeleton className="absolute inset-0 z-20 rounded-none" />
         )}
-        <Image
-          src={imgSrc}
-          alt={item.title}
-          width={Math.round(imgWidth)}
-          height={Math.round(imgHeight)}
-          className={cn(
-            'pointer-events-none relative z-10 h-full w-full object-cover transition-opacity duration-500',
-            isLoading ? 'opacity-0' : 'opacity-100'
-          )}
-          placeholder="blur"
-          blurDataURL={blurDataUrl}
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            if (imgSrc !== item.url) {
-              setImgSrc(item.url)
-            }
-          }}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority={false}
-        />
+        {imageProps ? (
+          <Image
+            {...imageProps}
+            key={variantReady ? 'variant' : 'preview'}
+            alt={item.title}
+            width={Math.round(imgWidth)}
+            height={Math.round(imgHeight)}
+            className={cn(
+              'pointer-events-none relative z-10 h-full w-full object-cover transition-opacity duration-500',
+              isLoading ? 'opacity-0' : 'opacity-100'
+            )}
+            placeholder="blur"
+            blurDataURL={blurDataUrl}
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              // A ready variant failed → step down to preview/blurhash, never the original.
+              if (variantReady) {
+                setVariantFailed(true)
+                return
+              }
+              setIsLoading(false)
+            }}
+            sizes={POLAROID_GRID_SIZES}
+            priority={priority}
+          />
+        ) : (
+          <div
+            aria-hidden
+            className="pointer-events-none relative z-10 h-full w-full bg-cover bg-center"
+            style={{ backgroundImage: `url(${blurDataUrl})` }}
+          />
+        )}
       </div>
       {/* 标题区域：绝对定位在底部留白处，不影响相纸尺寸 */}
       <div 
@@ -124,12 +163,20 @@ const PolaroidCard = memo(function PolaroidCard({
  * @param props - 包含配置处理和图片加载处理
  */
 export default function PolaroidGallery(props: Readonly<ImageHandleProps>) {
-  const { data: configData } = useSwrHydrated<Config[]>({
-    handle: props.configHandle ?? (async () => [] as Config[]),
+  const emptyConfig: GalleryDisplayConfig = {
+    customIndexDownloadEnable: false,
+    customIndexOriginEnable: false,
+  }
+  const { data: configData } = useSwrHydrated<GalleryDisplayConfig>({
+    handle: props.configHandle ?? (async () => emptyConfig),
     args: 'system-config',
   })
 
-  const customTitle = configData?.find((item: Config) => item.config_key === 'custom_title')?.config_value
+  const customTitle = configData?.customTitle
+  // Prefer the live config, but fall back to the server-passed base on the first
+  // render (before the config SWR resolves) so cards serve AVIF immediately
+  // instead of double-loading preview thumbnails.
+  const variantBaseUrl = configData?.variantBaseUrl ?? props.variantBaseUrl ?? ''
 
   const { data } = useSWRInfinite((index) => {
     return [`client-${props.args}-${index}-${props.album}`, index]
@@ -181,13 +228,15 @@ export default function PolaroidGallery(props: Readonly<ImageHandleProps>) {
       <p className="absolute top-1/2 mx-auto max-w-sm -translate-y-3/4 text-center text-2xl font-black text-muted-foreground md:text-4xl">
         {customTitle || '瓦达西可不可爱'}
       </p>
-      {dataList?.map((item: ImageType) => (
+      {dataList?.map((item: ImageType, index: number) => (
         <PolaroidCard
           key={item.id}
           item={item}
           style={currentPositions[item.id]}
           zIndex={cardZIndices[item.id] || 1}
           onMouseDown={handleCardClick}
+          variantBaseUrl={variantBaseUrl}
+          priority={index < 3}
         />
       ))}
     </DraggableCardContainer>

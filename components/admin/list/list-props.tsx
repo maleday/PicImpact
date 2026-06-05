@@ -73,7 +73,7 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
     (state) => state,
   )
   const { data: albums, isLoading: albumsLoading } = useSWR('/api/v1/albums', fetcher)
-  const { data: adminConfig } = useSWR('/api/v1/settings/admin-config', fetcher)
+  const { data: adminConfig } = useSWR<import('~/types').AdminConfig>('/api/v1/settings/admin-config', fetcher)
   const t = useTranslations()
 
   const dataProps: ImageListDataProps = {
@@ -85,9 +85,11 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
       try {
         const response = await fetch('/api/v1/images/camera-lens-list')
         if (response.ok) {
-          const data = await response.json()
-          setCameras(data.cameras)
-          setLenses(data.lenses)
+          const payload = await response.json()
+          if (payload?.data) {
+            setCameras(payload.data.cameras ?? [])
+            setLenses(payload.data.lenses ?? [])
+          }
         }
       } catch (error) {
         console.error('Failed to fetch camera and lens list:', error)
@@ -98,12 +100,8 @@ export default function ListProps(props : Readonly<ImageServerHandleProps>) {
   }, [])
 
   useEffect(() => {
-    if (adminConfig && adminConfig.length > 0) {
-      const pageSizeConfig = adminConfig.find((config: any) => config.config_key === 'admin_images_per_page')
-      if (pageSizeConfig) {
-        const newPageSize = parseInt(pageSizeConfig.config_value, 10) || 8
-        setPageSize(newPageSize)
-      }
+    if (adminConfig && typeof adminConfig.adminImagesPerPage === 'number' && adminConfig.adminImagesPerPage > 0) {
+      setPageSize(adminConfig.adminImagesPerPage)
     }
   }, [adminConfig])
 

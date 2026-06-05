@@ -3,9 +3,10 @@
 import type { ImageHandleProps } from '~/types/props'
 import { useSwrPageTotalHook } from '~/hooks/use-swr-page-total-hook'
 import useSWRInfinite from 'swr/infinite'
+import { useSwrHydrated } from '~/hooks/use-swr-hydrated'
 import { useTranslations } from 'next-intl'
 import { MasonryPhotoAlbum, RenderImageContext, RenderImageProps } from 'react-photo-album'
-import type { ImageType } from '~/types'
+import type { GalleryDisplayConfig, ImageType } from '~/types'
 import { ReloadIcon } from '@radix-ui/react-icons'
 import { Button } from '~/components/ui/button'
 import BlurImage from '~/components/album/blur-image'
@@ -17,10 +18,9 @@ import { AnimatedIconTrigger, mergeAnimatedTriggerProps } from '~/components/ico
 function renderNextImage(
   _: RenderImageProps,
   { photo }: RenderImageContext,
-  dataList: never[],
 ) {
   return (
-    <BlurImage photo={photo} dataList={dataList} />
+    <BlurImage photo={photo} />
   )
 }
 
@@ -37,6 +37,18 @@ export default function TagGallery(props : Readonly<ImageHandleProps>) {
       revalidateIfStale: false,
       revalidateOnReconnect: false,
     })
+  const emptyConfig: GalleryDisplayConfig = {
+    customIndexDownloadEnable: false,
+    customIndexOriginEnable: false,
+  }
+  const { data: configData } = useSwrHydrated<GalleryDisplayConfig>({
+    handle: props.configHandle ?? (async () => emptyConfig),
+    args: 'system-config',
+  })
+  // Prefer the live config, but fall back to the server-passed base on the first
+  // render (before the config SWR resolves) so tag photos serve AVIF immediately
+  // instead of double-loading preview thumbnails.
+  const variantBaseUrl = configData?.variantBaseUrl ?? props.variantBaseUrl ?? ''
   const dataList = data?.flat() ?? []
   const t = useTranslations()
   const router = useRouter()
@@ -58,12 +70,16 @@ export default function TagGallery(props : Readonly<ImageHandleProps>) {
             }}
             photos={
               dataList?.map((item: ImageType) => ({
-                src: item.preview_url || item.url,
+                // Layout `src` only — the actual image is rendered by BlurImage
+                // via the variant ladder. Never reference the full-resolution
+                // original here (⑤: the tag grid must not load multi-MB originals).
+                src: item.preview_url || '',
                 alt: item.detail,
-                ...item
+                ...item,
+                variantBaseUrl,
               })) || []
             }
-            render={{image: (...args) => renderNextImage(...args, dataList)}}
+            render={{image: (...args) => renderNextImage(...args)}}
           />
         </div>
         <div className="order-1 sm:order-3 flex flex-wrap justify-center space-x-2 sm:space-x-0 sm:flex-col flex-1 px-2 py-1 sm:py-0 sm:space-y-1 text-gray-500 sm:sticky top-2 self-start">
